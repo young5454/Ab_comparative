@@ -8,13 +8,14 @@ def main():
     parser.add_argument('--hypo_path', required=True, help='Path to hypothetical proteins fasta file')
     parser.add_argument('--group_name', required=True, help='Name of the strain group to run COG analysis')
     parser.add_argument('--types', required=True, help='Specify core or shell gene types')
-    
+    parser.add_argument('--save_path', required=False, help='Path to save pie chart')    
     args = parser.parse_args()
 
     raw_tsv_file = args.tsv_file
     hypo_path = args.hypo_path
     group_name = args.group_name
     types = args.types
+    save_path = args.save_path
 
     # Count number of hypothetical proteins
     with open(hypo_path, 'r') as hypo:
@@ -137,6 +138,7 @@ def main():
     plt.legend(bbox_to_anchor=(0.85, 1), loc='upper left', labels=labels)
 
     # Save pie plot - align to the left with the legends
+    figure_name = save_path + figure_name
     plt.savefig(figure_name, bbox_inches='tight')
 
 
