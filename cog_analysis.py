@@ -2,8 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 
-def main():
-    
+def main():    
     # Argument parser
     parser = argparse.ArgumentParser(description='COG Analysis Script')
     parser.add_argument('--tsv_file', required=True, help='Path to annotation TSV file')
@@ -90,7 +89,6 @@ def main():
     print('+--------------------------------------------+')
     nums = sum(list(cog_dictionary_weighted.values()))
     print('Total number of queries:', nums)
-    
 
     # Larger grouping: group labels into 4 categories
     grouped = {'Metabolism': 0, 'Information storage and processing': 0, 
@@ -132,7 +130,6 @@ def main():
     print('+--------------------------------------------+')
     grouped_nums = sum(list(grouped.values()))
     print('Total number of queries:', grouped_nums) 
-    
     print('+--------------------------------------------+')
     print('End of results')
     print('+--------------------------------------------+')
