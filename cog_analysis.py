@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import argparse
 
 def main():
+    
+    # Argument parser
     parser = argparse.ArgumentParser(description='COG Analysis Script')
     parser.add_argument('--tsv_file', required=True, help='Path to annotation TSV file')
     parser.add_argument('--hypo_path', required=True, help='Path to hypothetical proteins fasta file')
@@ -22,7 +24,6 @@ def main():
         sequences = hypo.read().split('>')[1:]  # Split by '>' and remove the first empty element
     
     num_of_hypos = len(sequences)
-    print('Number of Hypothetical Proteins are: ', num_of_hypos)
 
     # Clean tsv file format for easy parsing
     # Define input and output file names
@@ -30,6 +31,7 @@ def main():
 
     # Open input and output files
     with open(raw_tsv_file, 'r') as infile, open(cleaned_tsv_file, 'w') as outfile:
+        
         # Initialize a flag to skip lines at the beginning
         skip_lines = True
         
@@ -76,10 +78,19 @@ def main():
                     curr = cog_dictionary_weighted[bit]
                     cog_dictionary_weighted[bit] = curr + point
     
-    # Result statistics
-    print(cog_dictionary_weighted)
+    # Print result statistics
+    print('+--------------------------------------------+')
+    print('Number of Hypothetical Proteins are:', num_of_hypos)
+    print('+--------------------------------------------+')
+    for category in cog_dictionary_weighted.keys():
+        if category == 'Hypo':
+            continue
+        else:
+            print('Number of genes in', category, 'is:', cog_dictionary_weighted[category])
+    print('+--------------------------------------------+')
     nums = list(cog_dictionary_weighted.values())
-    print(sum(nums))
+    print('Total number of queries:', nums)
+    
 
     # Larger grouping: group labels into 4 categories
     grouped = {'Metabolism': 0, 'Information storage and processing': 0, 
@@ -110,11 +121,21 @@ def main():
         else:
             curr = grouped['Poorly characterized'] 
             grouped['Poorly characterized'] = curr + cog_dictionary_weighted[ori_key]
+            
+    # Print result statistics
+    print('+--------------------------------------------+')
+    for category in grouped.keys():
+        if category == 'Hypo':
+            continue
+        else:
+            print('Number of genes in', category, 'is:', grouped[category])
+    print('+--------------------------------------------+')
+    grouped_nums = list(grouped.values())
+    print('Total number of queries:', grouped_nums) 
     
-    # Result statistics
-    print(grouped)
-    nums = list(grouped.values())
-    print(sum(nums)) 
+    print('+--------------------------------------------+')
+    print('End of results')
+    print('+--------------------------------------------+')
 
     # Draw pie plot - Grouped
     # Extract labels (categories) and values (proportions) from the dictionary
@@ -138,7 +159,7 @@ def main():
     plt.axis('equal')  # Equal aspect ratio ensures the pie chart is circular.
 
     # Add a legend
-    plt.legend(bbox_to_anchor=(0.85, 1), loc='upper left', labels=labels)
+    plt.legend(bbox_to_anchor=(0.95, 1), loc='upper left', labels=labels)
 
     # Save pie plot - align to the left with the legends
     figure_name = save_path + figure_name
