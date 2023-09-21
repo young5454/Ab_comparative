@@ -127,14 +127,14 @@ def main():
     explody = [0.03, 0.03, 0.03, 0.03, 0.03, 0.03]
 
     # Create a pie chart
-    title = group_name + '_' +  types + '_' +  'Genes'
-    figure_name = title + '.png'
+    plot_title = group_name + ' ' + types + ' ' + 'Genes'
+    save_title = group_name + '_' +  types + '_' +  'Genes'
+    figure_name = save_title + '.png'
     plt.figure(figsize=(8, 8))
     plt.subplots_adjust(left=0.1)  # You can adjust the value as needed
     plt.pie(proportions, autopct='%1.2f%%', startangle=140, colors=pastel_colors, explode=explody)
     
-    plt.title(title)
-    # plt.title('lvCRAB Two Samples Core Genes')
+    plt.title(plot_title)
     plt.axis('equal')  # Equal aspect ratio ensures the pie chart is circular.
 
     # Add a legend
