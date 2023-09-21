@@ -15,8 +15,9 @@ def main():
     csv_file_path = args.csv_file
     query = args.query_name
     subject = args.subject_name
-    evalue = args.evalue
-    save_path = args.pident
+    evalue_threshold = args.evalue
+    pident_threshold = args.pident
+    bitscore_threshold = args.bitscore
     
     # Define the new line you want to add
     category = "qseqid	sseqid	pident	length	mismatch	gapopen	qstart	qend	sstart	send	evalue	bitscore\n"
@@ -35,5 +36,9 @@ def main():
         with open(csv_file_path, 'w') as file:
             file.write(updated_content)
 
-    # Read the TSV file into a pandas DataFrame
-    df = pd.read_csv(csv_file_path, sep='\t')
+#     # Read the TSV file into a pandas DataFrame
+#     df = pd.read_csv(csv_file_path, sep='\t')
+    
+    
+if __name__ == "__main__":
+    main()
