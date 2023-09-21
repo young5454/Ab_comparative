@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import argparse
 
 def main():    
-    # Argument parsery
+    # Argument parser
     parser = argparse.ArgumentParser(description='COG Analysis Script')
     parser.add_argument('--tsv_file', required=True, help='Path to annotation TSV file')
     parser.add_argument('--hypo_path', required=True, help='Path to hypothetical proteins fasta file')
