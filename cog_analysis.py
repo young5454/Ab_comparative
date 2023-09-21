@@ -89,7 +89,6 @@ def main():
     print('+--------------------------------------------+')
     nums = sum(list(cog_dictionary_weighted.values()))
     print('Total number of queries:', nums)
-
     # Larger grouping: group labels into 4 categories
     grouped = {'Metabolism': 0, 'Information storage and processing': 0, 
             'Mobileome': 0, 'Cellular processing and signaling': 0, 'Hypothetical protein': 0, 'Poorly characterized': 0}
