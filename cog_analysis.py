@@ -83,11 +83,11 @@ def main():
 
     # Larger grouping: group labels into 4 categories
     grouped = {'Metabolism': 0, 'Information storage and processing': 0, 
-            'Cellular processing and signaling': 0, 'Hypothetical protein': 0, 'Poorly characterized': 0}
+            'Mobileome': 0, 'Cellular processing and signaling': 0, 'Hypothetical protein': 0, 'Poorly characterized': 0}
 
     metabolism = ['C', 'E', 'F', 'G', 'H', 'I', 'P', 'Q']
     info_storage_and_processing = ['A', 'B', 'J', 'K', 'L']
-    # mobileome = ['X']
+    mobileome = ['X']
     cellular_processing_and_signaling = ['D', 'M', 'N', 'O', 'T', 'U', 'V', 'W', 'Z']
     poorly_characterized = ['R', 'S', '-']
 
@@ -98,6 +98,9 @@ def main():
         elif ori_key in info_storage_and_processing:
             curr = grouped['Information storage and processing'] 
             grouped['Information storage and processing'] = curr + cog_dictionary_weighted[ori_key]
+        elif ori_key in mobileome:
+            curr = grouped['Mobileome']
+            grouped['Mobileome'] = curr + cog_dictionary_weighted[ori_key]
         elif ori_key in cellular_processing_and_signaling:
             curr = grouped['Cellular processing and signaling'] 
             grouped['Cellular processing and signaling'] = curr + cog_dictionary_weighted[ori_key]
@@ -119,9 +122,9 @@ def main():
     proportions = list(grouped.values())
 
     # Define custom colors for the pie chart
-    # custom_colors = ['#c97224ff', '#328229ff', '#1c595dff', '#eedfc2ff']  # Replace with your desired colors
-    pastel_colors = ['#ff9999', '#ffc000', '#8fd9b6', '#9dd3ff', '#d395d0']            # Metabolism, 
-    explody = [0.03, 0.03, 0.03, 0.03, 0.03]
+    # Metabolism, Information storage and processing, Mobileome, Cellular processing and signaling, Hypo, Poor
+    pastel_colors = ['#ff9999', '#ffc000', '#969bff', '#8fd9b6', '#9dd3ff', '#d395d0']             
+    explody = [0.03, 0.03, 0.03, 0.03, 0.03, 0.03]
 
     # Create a pie chart
     title = group_name + '_' +  types + '_' +  'Genes'
