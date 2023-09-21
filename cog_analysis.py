@@ -86,9 +86,9 @@ def main():
         if category == 'Hypo':
             continue
         else:
-            print('Number of genes in', category, 'is:', cog_dictionary_weighted[category])
+            print('Number of genes in', category + ':', cog_dictionary_weighted[category])
     print('+--------------------------------------------+')
-    nums = list(cog_dictionary_weighted.values())
+    nums = sum(list(cog_dictionary_weighted.values()))
     print('Total number of queries:', nums)
     
 
@@ -128,9 +128,9 @@ def main():
         if category == 'Hypo':
             continue
         else:
-            print('Number of genes in', category, 'is:', grouped[category])
+            print('Number of genes in', category + ':', grouped[category])
     print('+--------------------------------------------+')
-    grouped_nums = list(grouped.values())
+    grouped_nums = sum(list(grouped.values()))
     print('Total number of queries:', grouped_nums) 
     
     print('+--------------------------------------------+')
