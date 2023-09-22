@@ -88,39 +88,14 @@ def main():
     
     # Make FASTAs of passed entries (pass FASTAs)
     # Pass FASTA - query
-    result_sequences = []
-
-    with open(query_faa_file, 'r') as faa:
-        sequences = faa.read().split('>')[1:]  # Split by '>' and remove the first empty element
-
-    count = 0
-    faa_ids = []
-    for seq in sequences:
-        ids = seq.split('\n')[0].split(' ')[0]
-        faa_ids.append(ids)
-
-        for query in pass_query_set:
-            if query in seq:
-                seq_lines = seq.strip().split('\n')
-                seq_id = seq_lines[0]
-
-                # Split the fasta entry at the first whitespace
-                id_, annotation = seq_id.split(maxsplit=1)
-
-                # Include all
-                result_sequences.append(f'>{seq_id}\n')
-                count += 1
-                result_sequences.append('\n'.join(seq_lines[1:]))
-                result_sequences.append('\n') 
+    query_save_file_name = save_query + output_query
+    query_count = fasta_maker_list(query_faa_file, pass_query_set, query_save_file_name)
+    print('Successfully created and saved query pass FASTA file')
     
-
-# Save the result_sequences to a file
-with open(save_path, 'w') as result_file:
-    result_file.writelines(result_sequences)
-
-print(count)
-    with open(save_query, 'w') as path_to_save_query:
-        path_to_save_query.writelines(result_sequences)
+    # Pass FASTA - subject
+    subject_save_file_name = save_subject + output_subject
+    subject_count = fasta_maker_list(subject_faa_file, pass_subject_set, subject_save_file_name) 
+    print('Successfully created and saved subject pass FASTA file')
 
     
 if __name__ == "__main__":
