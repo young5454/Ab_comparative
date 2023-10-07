@@ -1,2 +1,5 @@
-.ipynb_checkpoints
+/.ipynb_checkpoints/
 __pycache__
+/.snakemake/
+/.Trash-1040/
+

@@ -95,12 +95,12 @@ def run_id_converter(email, api_key, faa_file, gene_list, n):
                         print("+--------------------------------------------------+")
                         print(pad + "Gene DB Hit for " + query_id)
                         cds = "CDS symbol: " + cds_symbol
-                        gid = "Gene ID: " + gene_id
+                        gid = "Gene ID: " + str(gene_id)
                         print(cds.rjust(52, ' '))
                         print(gid.rjust(52, ' '))
                         print("+--------------------------------------------------+")
                 print("+--------------------------------------------------+")
-                print("+------    End of Results for " + query_id + "    ------+")
+                print("+------    End of results for " + query_id + "    ------+")
                 print("+--------------------------------------------------+")
                 print()
 
@@ -111,7 +111,7 @@ def main():
     parser.add_argument('--api_key', required=False, help='NCBI API key if you have one')
     parser.add_argument('--faa_file', required=True, help='Path to Prokka FAA file')
     parser.add_argument('--gene_list', required=True, help='Path to text file of query gene list to be converted')
-    parser.add_argument('--n', required=True, help='Top n number of relevant BlastP alignments')
+    parser.add_argument('--n', required=False, default=35, help='Top n number of relevant BlastP alignments. Default 35, Max 50')
     parser.add_argument('--save_path', required=False, default='./', help='Path to save log file')
     parser.add_argument('--output', required=False, default='converted.log', help='Name of log file')
     args = parser.parse_args()
@@ -132,8 +132,11 @@ def main():
         run_id_converter(email, api_key, faa_file, gene_list, n)
         
         # Restore the standard output
-        sys.stdout = sys.__stdout__    
-        
+        sys.stdout = sys.__stdout__   
+
+    print("+--------------------------------------------------+")
+    print("+------    End of results for everything     ------+")
+    print("+--------------------------------------------------+")
 if __name__ == "__main__":
     main()
 
