@@ -156,7 +156,7 @@ rule prokka_strain:
     input:
         # Input FASTAs are polished FASTAs from Polypolish
         strain_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta",
-        strain_ref_genbank = expand("/jupyterdem/assembly/ref/{ref}.gb", ref=REF)
+        strain_ref_genbank=expand("/jupyterdem/assembly/ref/{ref}.gb", ref=REF)
     output:
         strain_err="/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.err",
         strain_ffn="/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.ffn",
@@ -186,7 +186,7 @@ rule prokka_strain:
 rule roary_strain_ref_pairwise:
     input:
         # Input GFFs are annotated GFFs from Prokka
-        ref_gff= expand("/jupyterdem/annotation/ref/{ref}/{ref}.gff", ref=REF),
+        ref_gff=expand("/jupyterdem/annotation/ref/{ref}/{ref}.gff", ref=REF),
         strain_gff="/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.gff"
     output:
         accessory_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.header.embl",
@@ -220,14 +220,29 @@ rule roary_strain_ref_pairwise:
 
 
 # Rule to copy and save STRAIN GFFs into a tmp folder
-rule make_roary_tmp_dir:
+rule copy_strain_gffs:
+    input:
+        strain_gff=expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.gff", zip, group=GROUP, strain=STRAIN)
     output:
-        directory("/jupyterdem/roary_tmp/{group}/")
-    shell:
-        """
-        mkdir -p {output[0]}
-        """
-
+        out_dir=directory("/jupyterdem/roary_tmp/{group}/")
+    run:
+        # Part 1: Execute before the if statement
+        # print(type(input.strain_gff))
+        input_strin_gff_list = str(input.strain_gff).split(' ')
+        print(input_strin_gff_list)
+        shell("mkdir -p {output.out_dir}")
+        # Check if the 'GROUP' part of the 'strain_gff' path matches the 'group' in 'out_dir'
+        for strain in input_strin_gff_list:
+            group_id = strain.split("/")[-1].split('_')[0]
+            print(group_id)
+            if group_id == output.out_dir.split("/")[-1]:
+                # Part 2: Execute if the if statement is true
+                shell("cp {strain} {output.out_dir}")
+    # shell:
+    #     """
+    #     mkdir -p {output[0]}
+    #     cp {input.strain_gff} {output.out_dir}
+    #     """
 
 # # Rule to run Roary for STRAIN-to-REF 1:1 pairwise Pangenome analysis
 # rule roary_within_group:
