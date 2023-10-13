@@ -90,7 +90,9 @@ rule all:
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_new_genes.Rtab", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_unique_genes.Rtab", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/pan_genome_reference.fa", zip, group=GROUP, strain=STRAIN),
-        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/summary_statistics.txt", zip, group=GROUP, strain=STRAIN)
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/summary_statistics.txt", zip, group=GROUP, strain=STRAIN),
+
+        expand("/jupyterdem/roary_tmp/{group}/", group=GROUP)
 
 
 # Rule to run Polypolish for polishing long-read assemblies with Illumina short reads
@@ -187,25 +189,6 @@ rule roary_strain_ref_pairwise:
         ref_gff= expand("/jupyterdem/annotation/ref/{ref}/{ref}.gff", ref=REF),
         strain_gff="/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.gff"
     output:
-        # "./accessory.header.embl",
-        # "./accessory.tab",
-        # "./accessory_binary_genes.fa",
-        # "./accessory_graph.dot",
-        # "./blast_identity_frequency.Rtab",
-        # "./clustered_proteins",
-        # "./core_accessory.header.embl",
-        # "./core_accessory.tab",
-        # "./core_accessory_graph.dot",
-        # "./core_alignment_header.embl",
-        # "./core_gene_alignment.aln",
-        # "./gene_presence_absence.Rtab",
-        # "./gene_presence_absence.csv",
-        # "./number_of_conserved_genes.Rtab",
-        # "./number_of_genes_in_pan_genome.Rtab",
-        # "./number_of_new_genes.Rtab",
-        # "./number_of_unique_genes.Rtab",
-        # "./pan_genome_reference.fa",
-        # "./summary_statistics.txt"
         accessory_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.header.embl",
         accessory_tab="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.tab",
         accessory_binary_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_binary_genes.fa",
@@ -236,6 +219,50 @@ rule roary_strain_ref_pairwise:
         """
 
 
+# Rule to copy and save STRAIN GFFs into a tmp folder
+rule make_roary_tmp_dir:
+    output:
+        directory("/jupyterdem/roary_tmp/{group}/")
+    shell:
+        """
+        mkdir -p {output[0]}
+        """
+
+
+# # Rule to run Roary for STRAIN-to-REF 1:1 pairwise Pangenome analysis
+# rule roary_within_group:
+#     input:
+#         # Input GFFs are annotated GFFs from Prokka
+#         strain_gff="/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.gff"
+#     output:
+#         accessory_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.header.embl",
+#         accessory_tab="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.tab",
+#         accessory_binary_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_binary_genes.fa",
+#         accessory_graph="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_graph.dot",
+#         blast_identity_frequency="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/blast_identity_frequency.Rtab",
+#         clustered_proteins="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/clustered_proteins",
+#         core_accessory_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory.header.embl",
+#         core_accessory="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory.tab",
+#         core_accessory_graph="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory_graph.dot",
+#         core_alignment_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_alignment_header.embl",
+#         core_gene_alignment="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_gene_alignment.aln",
+#         gene_presence_absence_rtab="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/gene_presence_absence.Rtab",
+#         gene_presence_absence_csv="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/gene_presence_absence.csv",
+#         number_of_conserved_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_conserved_genes.Rtab",
+#         number_of_genes_in_pan_genome="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_genes_in_pan_genome.Rtab",
+#         number_of_new_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_new_genes.Rtab",
+#         number_of_unique_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_unique_genes.Rtab",
+#         pan_genome_reference="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/pan_genome_reference.fa",
+#         summary_statistics="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/summary_statistics.txt"
+#     params:
+#         threads=8,
+#         out_dir="/jupyterdem/pangenome2/{group}_within_group/",
+#         pident=90
+#     shell:
+#         """
+#         cd {params.out_dir}
+#         roary -e -p {params.threads} -v {input.ref_gff} {input.strain_gff}
+#         """
 
 
 # # Rule to run ABRicate for annotating virulence factors within REFERENCE FASTAs
