@@ -69,8 +69,28 @@ rule all:
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.gbk", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.log", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.tbl", zip, group=GROUP, strain=STRAIN),
-        expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.txt", zip, group=GROUP, strain=STRAIN)
+        expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.txt", zip, group=GROUP, strain=STRAIN),
 
+        # Roary outputs - STRAIN-to-REF pairwise
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.header.embl", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.tab", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_binary_genes.fa", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_graph.dot", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/blast_identity_frequency.Rtab", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/clustered_proteins", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory.header.embl", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory.tab", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory_graph.dot", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_alignment_header.embl", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_gene_alignment.aln", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/gene_presence_absence.Rtab", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/gene_presence_absence.csv", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_conserved_genes.Rtab", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_genes_in_pan_genome.Rtab", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_new_genes.Rtab", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_unique_genes.Rtab", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/pan_genome_reference.fa", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/summary_statistics.txt", zip, group=GROUP, strain=STRAIN)
 
 
 # Rule to run Polypolish for polishing long-read assemblies with Illumina short reads
@@ -96,6 +116,8 @@ rule polypolish:
         polypolish_insert_filter.py --in1 {output.aligned1} --in2 {output.aligned2} --out1 {output.filtered1} --out2 {output.filtered2}
         polypolish {input.genome_fasta} {output.filtered1} {output.filtered2} > {output.polished_fasta}
         """
+
+### Need to add QUAST and BUSCO for QC
 
 # Rule to run Prokka for annotating REFERENCE FASTAs
 rule prokka_ref:
@@ -126,10 +148,11 @@ rule prokka_ref:
         prokka --outdir {params.out_dir} --prefix {params.prefix} --locustag {params.locustag} --cpus {params.threads} --kingdom {params.kingdom} --addgenes --force --proteins {input.ref_genbank} {input.ref_fasta}
         """
 
+
 # Rule to run Prokka for annotating polished STRAIN FASTAs
 rule prokka_strain:
     input:
-        # Input FASTAs are polished FASTAs using Polypolish
+        # Input FASTAs are polished FASTAs from Polypolish
         strain_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta",
         strain_ref_genbank = expand("/jupyterdem/assembly/ref/{ref}.gb", ref=REF)
     output:
@@ -155,3 +178,95 @@ rule prokka_strain:
         """
         prokka --outdir {params.out_dir} --prefix {params.prefix} --locustag {params.locustag} --cpus {params.threads} --kingdom {params.kingdom} --addgenes --force --proteins {input.strain_ref_genbank} {input.strain_fasta}
         """
+
+
+# Rule to run Roary for STRAIN-to-REF 1:1 pairwise Pangenome analysis
+rule roary_strain_ref_pairwise:
+    input:
+        # Input GFFs are annotated GFFs from Prokka
+        ref_gff= expand("/jupyterdem/annotation/ref/{ref}/{ref}.gff", ref=REF),
+        strain_gff="/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.gff"
+    output:
+        # "./accessory.header.embl",
+        # "./accessory.tab",
+        # "./accessory_binary_genes.fa",
+        # "./accessory_graph.dot",
+        # "./blast_identity_frequency.Rtab",
+        # "./clustered_proteins",
+        # "./core_accessory.header.embl",
+        # "./core_accessory.tab",
+        # "./core_accessory_graph.dot",
+        # "./core_alignment_header.embl",
+        # "./core_gene_alignment.aln",
+        # "./gene_presence_absence.Rtab",
+        # "./gene_presence_absence.csv",
+        # "./number_of_conserved_genes.Rtab",
+        # "./number_of_genes_in_pan_genome.Rtab",
+        # "./number_of_new_genes.Rtab",
+        # "./number_of_unique_genes.Rtab",
+        # "./pan_genome_reference.fa",
+        # "./summary_statistics.txt"
+        accessory_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.header.embl",
+        accessory_tab="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.tab",
+        accessory_binary_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_binary_genes.fa",
+        accessory_graph="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_graph.dot",
+        blast_identity_frequency="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/blast_identity_frequency.Rtab",
+        clustered_proteins="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/clustered_proteins",
+        core_accessory_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory.header.embl",
+        core_accessory="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory.tab",
+        core_accessory_graph="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory_graph.dot",
+        core_alignment_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_alignment_header.embl",
+        core_gene_alignment="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_gene_alignment.aln",
+        gene_presence_absence_rtab="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/gene_presence_absence.Rtab",
+        gene_presence_absence_csv="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/gene_presence_absence.csv",
+        number_of_conserved_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_conserved_genes.Rtab",
+        number_of_genes_in_pan_genome="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_genes_in_pan_genome.Rtab",
+        number_of_new_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_new_genes.Rtab",
+        number_of_unique_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_unique_genes.Rtab",
+        pan_genome_reference="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/pan_genome_reference.fa",
+        summary_statistics="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/summary_statistics.txt"
+    params:
+        threads=8,
+        out_dir="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/",
+        pident=90
+    shell:
+        """
+        cd {params.out_dir}
+        roary -e -p {params.threads} -v {input.ref_gff} {input.strain_gff}
+        """
+
+
+
+
+# # Rule to run ABRicate for annotating virulence factors within REFERENCE FASTAs
+# rule abricate_ref:
+#     input:
+#         # Input FASTAs are polished FASTAs using Polypolish
+#         ref_fasta="/jupyterdem/assembly/ref/genome/{ref}.fasta"
+#     output:
+#         ref_abricate_tab="/jupyterdem/annotation/ref/{ref}/{ref}_abricate.tsv"
+#     params:
+#         threads=8,
+#         db="vfdb"
+#     shell:
+#         """
+#         abricate-get_db --db {params.db} --force
+#         abricate --db {params.db} {input.ref_fasta}
+#         """
+
+
+# # Rule to run ABRicate for annotating virulence factors within STRAIN FASTAs
+# rule abricate_strain:
+#     input:
+#         # Input FASTAs are polished FASTAs using Polypolish
+#         strain_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta"
+#     output:
+#         strain_abricate_tsv="/jupyterdem/annotation/{group}_{strain}/{group}_{strain}_abricate.tsv"
+#     params:
+#         threads=8,
+#         db="vfdb"
+#     shell:
+#         """
+#         abricate-get_db --db {params.db} --force
+#         abricate --db {params.db} {input.strain_fasta}
+#         """
