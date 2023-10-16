@@ -271,6 +271,22 @@ rule roary_strain_ref_pairwise:
 
 # Rule to run Roary for STRAINS within GROUPS
 rule roary_within_group:
+    output:
+        out_dir=directory("/jupyterdem/pangenome2/{group}")
+    params:
+        threads=8,
+        tmp_dir=directory("/jupyterdem/roary_tmp/{group}/"),
+        pident=90
+    shell:
+        """
+        mkdir {output.out_dir}
+        cd {params.tmp_dir}
+        roary -e -p {params.threads} -i {params.pident} -v *.gff
+        mv *.gff {output.out_dir}
+        """
+
+# Rule to run Roary for STRAINS within GROUPS & REF
+rule roary_within_group_with_ref:
     # input:
     #     # Input GFFs are annotated GFFs from Prokka
     #     strain_gff=expand("/jupyterdem/roary_tmp/{group}/{group}_{strain}.gff", zip, group=GROUP, strain=STRAIN)
