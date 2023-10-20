@@ -1,7 +1,7 @@
 
 import os
 import glob
-configfile: "config.yaml"
+configfile: "groups_original.yml"
 
 # GROUP, STRAIN = config['groups']
 # print(GROUP)
@@ -15,6 +15,8 @@ configfile: "config.yaml"
 
 GROUP, STRAIN = glob_wildcards("/jupyterdem/assembly/{group}_{strain}/genome")
 REF, = glob_wildcards("/jupyterdem/assembly/ref/genome/{ref}.fasta")
+
+ADDGROUP, ADDSTRAIN = glob_wildcards("/jupyterdem/added_assembly/{group}_{strain}/genome")
 
 # Rule to run Polypolish for all strains within a group
 rule all:
@@ -38,12 +40,15 @@ rule all:
         # Polished assembly
         expand("/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta", zip, group=GROUP, strain=STRAIN),
        
+        # Added assembly
+        expand("/jupyterdem/added_assembly/{group}_{strain}/genome/{group}_{strain}.fasta", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        
         ### Prokka I/O files
         # Reference genome & genbank
         expand("/jupyterdem/assembly/ref/genome/{ref}.fasta", ref=REF),
         expand("/jupyterdem/assembly/ref/{ref}.gb", ref=REF),
 
-        # Prokka outputs - STRAINS
+        # Prokka outputs - REFERENCE 
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.err", ref=REF),
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.ffn", ref=REF),
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.fsa", ref=REF),
@@ -57,7 +62,7 @@ rule all:
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.tbl", ref=REF),
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.txt", ref=REF),
         
-        # Prokka outputs - REFERENCE FASTA
+        # Prokka outputs - STRAINS 
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.err", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.ffn", zip, group=GROUP, strain=STRAIN),  
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.fsa", zip, group=GROUP, strain=STRAIN),
@@ -70,8 +75,22 @@ rule all:
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.log", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.tbl", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.txt", zip, group=GROUP, strain=STRAIN),
-
-        ### Roary I/O files
+        
+        # # Prokka outputs - STRAINS - ADDED
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.err", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.ffn", zip, group=ADDGROUP, strain=ADDSTRAIN),  
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.fsa", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.gff", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.sqn", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.tsv", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.faa", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.fna", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.gbk", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.log", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.tbl", zip, group=ADDGROUP, strain=ADDSTRAIN),
+        # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.txt", zip, group=ADDGROUP, strain=ADDSTRAIN),
+       
+        ## Roary I/O files
         # Roary outputs - STRAIN-to-REF pairwise
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.header.embl", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.tab", zip, group=GROUP, strain=STRAIN),
@@ -92,16 +111,19 @@ rule all:
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_unique_genes.Rtab", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/pan_genome_reference.fa", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/summary_statistics.txt", zip, group=GROUP, strain=STRAIN),
+        
+        # expand("/jupyterdem/dummy/{ref}_dummy.txt", ref=REF),
+
+        # Roary output - Within-Group Roary output
+        expand("/jupyterdem/pangenome2/{group}", group=GROUP),
 
         # Roary directory - Roary tmp for holding strain GFFs
-        # expand("/jupyterdem/roary_tmp/{group}/", group=GROUP),
+        expand("/jupyterdem/roary_tmp/{group}/", group=GROUP),
 
         # Roary input - Within-GROUP Roary without reference
         # expand("/jupyterdem/roary_tmp/{group}/{group}_{strain}.gff", zip, group=GROUP, strain=STRAIN),
 
-        # Roary output - Within-Group Roary output
-        expand("/jupyterdem/pangenome2/{group}", group=GROUP)
-
+       
         # Roary output - Within-GROUP Roary without reference
         # expand("/jupyterdem/roary_tmp/{group}/accessory.header.embl", group=GROUP),
         # expand("/jupyterdem/roary_tmp/{group}/accessory.tab", group=GROUP),
@@ -194,6 +216,8 @@ rule prokka_ref:
         prefix="{ref}",
         locustag="{ref}",
         kingdom="Bacteria"
+    conda:
+        "env_prokka"
     shell:
         """
         prokka --outdir {params.out_dir} --prefix {params.prefix} --locustag {params.locustag} --cpus {params.threads} --kingdom {params.kingdom} --addgenes --force --proteins {input.ref_genbank} {input.ref_fasta}
@@ -225,11 +249,41 @@ rule prokka_strain:
         prefix="{group}_{strain}",
         locustag="{group}_{strain}",
         kingdom="Bacteria"
+    conda:
+        "env_prokka"
     shell:
         """
         prokka --outdir {params.out_dir} --prefix {params.prefix} --locustag {params.locustag} --cpus {params.threads} --kingdom {params.kingdom} --addgenes --force --proteins {input.strain_ref_genbank} {input.strain_fasta}
         """
 
+# # Rule to run Prokka for annotating polished STRAIN FASTAs - For ADDED STRAINS
+# rule prokka_strain_added:
+#     input:
+#         added_strain_fasta="/jupyterdem/added_assembly/{group}_{strain}/genome/{group}_{strain}.fasta",
+#         strain_ref_genbank=expand("/jupyterdem/assembly/ref/{ref}.gb", ref=REF)
+#     output:
+#         added_strain_err="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.err",
+#         added_strain_ffn="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.ffn",
+#         added_strain_fsa="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.fsa",
+#         added_strain_gff="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.gff",
+#         added_strain_sqn="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.sqn",
+#         added_strain_tsv="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.tsv",
+#         added_strain_faa="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.faa",
+#         added_strain_fna="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.fna",
+#         added_strain_gbk="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.gbk",
+#         added_strain_log="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.log",
+#         added_strain_tbl="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.tbl",
+#         added_strain_txt="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.txt"
+#     params:
+#         threads=8,
+#         out_dir="/jupyterdem/added_annotation/{group}_{strain}/",
+#         prefix="{group}_{strain}",
+#         locustag="{group}_{strain}",
+#         kingdom="Bacteria"
+#     shell:
+#         """
+#         prokka --outdir {params.out_dir} --prefix {params.prefix} --locustag {params.locustag} --cpus {params.threads} --kingdom {params.kingdom} --addgenes --force --proteins {input.strain_ref_genbank} {input.added_strain_fasta}
+#         """
 
 # Rule to run Roary for STRAIN-to-REF 1:1 pairwise Pangenome analysis
 rule roary_strain_ref_pairwise:
@@ -261,30 +315,109 @@ rule roary_strain_ref_pairwise:
         threads=8,
         out_dir="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/",
         pident=90
+    conda:
+        "env_roary"
     shell:
         """
         cd {params.out_dir}
         roary -e -p {params.threads} -i {params.pident} -v {input.ref_gff} {input.strain_gff}
         """
 
-## Rule to make roary_tmp group folder
+# Rule to make roary_tmp group folder
+rule move_gff_files:
+    output:
+        tmp_dir=directory("/jupyterdem/roary_tmp/{group}/")
+    params:
+        python="python3.6",
+        script="macrogen.sh",
+        group_info="groups_original.yml",
+        tmp_dir=directory("/jupyterdem/roary_tmp/"),
+    conda:
+        "env_roary"
+    shell:
+        """
+        python shellmake.py --group_yml {params.group_info} --save_path {params.tmp_dir} --script {params.script}
+        bash {params.script}
+        """
+
 
 # Rule to run Roary for STRAINS within GROUPS
 rule roary_within_group:
+    input:
+        tmp_dir="/jupyterdem/roary_tmp/{group}/"
     output:
-        out_dir=directory("/jupyterdem/pangenome2/{group}")
+        out_dir=directory("/jupyterdem/pangenome2/{group}/")
     params:
         threads=8,
-        tmp_dir=directory("/jupyterdem/roary_tmp/{group}/"),
-        pident=90
+        pident=90,
+    conda:
+        "env_roary"
     shell:
         """
         mkdir {output.out_dir}
-        cd {params.tmp_dir}
+        cd {input.tmp_dir}
         roary -e -p {params.threads} -i {params.pident} -v *.gff
         mv *.gff {output.out_dir}
         """
 
+#################################################################
+
+
+
+
+# # Rule to run Roary for STRAIN-to-REF 1:1 pairwise Pangenome analysis - For ADDED STRAINS
+# rule roary_strain_ref_pairwise_added:
+#     input:
+#         # Input GFFs are annotated GFFs from Prokka
+#         ref_gff=expand("/jupyterdem/annotation/ref/{ref}/{ref}.gff", ref=REF),
+#         added_strain_gff="/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.gff"
+#     output:
+#         accessory_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.header.embl",
+#         accessory_tab="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.tab",
+#         accessory_binary_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_binary_genes.fa",
+#         accessory_graph="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory_graph.dot",
+#         blast_identity_frequency="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/blast_identity_frequency.Rtab",
+#         clustered_proteins="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/clustered_proteins",
+#         core_accessory_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory.header.embl",
+#         core_accessory="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory.tab",
+#         core_accessory_graph="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_accessory_graph.dot",
+#         core_alignment_header="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_alignment_header.embl",
+#         core_gene_alignment="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/core_gene_alignment.aln",
+#         gene_presence_absence_rtab="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/gene_presence_absence.Rtab",
+#         gene_presence_absence_csv="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/gene_presence_absence.csv",
+#         number_of_conserved_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_conserved_genes.Rtab",
+#         number_of_genes_in_pan_genome="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_genes_in_pan_genome.Rtab",
+#         number_of_new_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_new_genes.Rtab",
+#         number_of_unique_genes="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_unique_genes.Rtab",
+#         pan_genome_reference="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/pan_genome_reference.fa",
+#         summary_statistics="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/summary_statistics.txt"
+#     params:
+#         threads=8,
+#         out_dir="/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/",
+#         pident=90
+#     shell:
+#         """
+#         cd {params.out_dir}
+#         roary -e -p {params.threads} -i {params.pident} -v {input.ref_gff} {input.strain_gff}
+#         """
+
+# ## Rule to make roary_tmp group folder
+
+# # Rule to run Roary for STRAINS within GROUPS
+# rule roary_within_group_added:
+#     output:
+#         out_dir=directory("/jupyterdem/pangenome2/{group}")
+#     params:
+#         threads=8,
+#         tmp_dir=directory("/jupyterdem/roary_tmp/{group}/"),
+#         pident=90
+#     shell:
+#         """
+#         mkdir {output.out_dir}
+#         cd {params.tmp_dir}
+#         roary -e -p {params.threads} -i {params.pident} -v *.gff
+#         mv *.gff {output.out_dir}
+#         """
 
 
 # # Rule to copy and save STRAIN GFFs into a tmp folder for within-group Roary
