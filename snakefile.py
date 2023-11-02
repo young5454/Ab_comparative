@@ -329,7 +329,7 @@ rule move_gff_files:
         tmp_dir=directory("/jupyterdem/roary_tmp/{group}/")
     params:
         python="python3.6",
-        script="macrogen.sh",
+        script="move_gffs.sh",
         group_info="groups_original.yml",
         tmp_dir=directory("/jupyterdem/roary_tmp/"),
     conda:

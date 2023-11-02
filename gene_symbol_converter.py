@@ -69,7 +69,7 @@ def run_id_converter(email, api_key, faa_file, gene_list, n):
                             print("+----------    End of Alignment #" + str(i) + "    ---------+")
                             print()
                     print("+--------------------------------------------------+")
-                    print("+------    End of BlastP for " + query_id + "     ------+")
+                    print("End of BlastP for " + query_id)
                     print("+--------------------------------------------------+")
                     print()
 
@@ -100,7 +100,7 @@ def run_id_converter(email, api_key, faa_file, gene_list, n):
                         print(gid.rjust(52, ' '))
                         print("+--------------------------------------------------+")
                 print("+--------------------------------------------------+")
-                print("+------    End of results for " + query_id + "    ------+")
+                print("End of results for " + query_id)
                 print("+--------------------------------------------------+")
                 print()
 
@@ -137,6 +137,7 @@ def main():
     print("+--------------------------------------------------+")
     print("+------    End of results for everything     ------+")
     print("+--------------------------------------------------+")
+    
 if __name__ == "__main__":
     main()
 
