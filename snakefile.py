@@ -43,11 +43,12 @@ rule all:
         # Added assembly
         expand("/jupyterdem/added_assembly/{group}_{strain}/genome/{group}_{strain}.fasta", zip, group=ADDGROUP, strain=ADDSTRAIN),
         
+        ### Busco I/O files
+        expand("/jupyterdem/busco/{group}_{strain}_busco/", zip, group=GROUP, strain=STRAIN),
+
         ### Prokka I/O files
         # Reference genome & genbank
         expand("/jupyterdem/assembly/ref/genome/{ref}.fasta", ref=REF),
-        expand("/jupyterdem/assembly/ref/{ref}.gb", ref=REF),
-
         # Prokka outputs - REFERENCE 
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.err", ref=REF),
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.ffn", ref=REF),
@@ -190,7 +191,32 @@ rule polypolish:
         polypolish {input.genome_fasta} {output.filtered1} {output.filtered2} > {output.polished_fasta}
         """
 
+
 ### Need to add QUAST and BUSCO for QC
+# 110323 Add BUSCO
+# Rule to run BUSCO assessments for polished assemblies and plot assessment plots
+rule busco:
+    input:
+        # Input FASTAs are polished FASTAs from Polypolish
+        strain_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta",
+    output:
+        out_dir=directory("/jupyterdem/busco/{group}_{strain}_busco/"),
+    params:
+        lineage_path="/jupyterdem/busco_downloads/lineages/bacteria_odb10",
+        output="{group}_{strain}_busco",
+        out_path="/jupyterdem/busco/",
+        sum_dir="/jupyterdem/busco/summaries/"
+    conda:
+        "env_busco"
+    shell:
+        """
+        busco -m genome -i {input.strain_fasta} -o {params.output} --out_path {params.out_path} -l {params.lineage_path}
+        mkdir -p {params.sum_dir}
+        cd {output.out_dir}
+        cp *.txt {params.sum_dir}
+        generate_plot.py -wd {params.sum_dir}
+        """
+
 
 # Rule to run Prokka for annotating REFERENCE FASTAs
 rule prokka_ref:
