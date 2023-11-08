@@ -45,6 +45,7 @@ rule all:
         
         ### Busco I/O files
         expand("/jupyterdem/busco/{group}_{strain}_busco/", zip, group=GROUP, strain=STRAIN),
+        expand("/jupyterdem/busco/summaries/dummy_{ref}.log", zip, ref=REF),
 
         ### Prokka I/O files
         # Reference genome & genbank
@@ -214,9 +215,9 @@ rule busco:
         mkdir -p {params.sum_dir}
         cd {output.out_dir}
         cp *.txt {params.sum_dir}
+        
         generate_plot.py -wd {params.sum_dir}
         """
-
 
 # Rule to run Prokka for annotating REFERENCE FASTAs
 rule prokka_ref:

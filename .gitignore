@@ -2,4 +2,4 @@
 __pycache__
 /.snakemake/
 /.Trash-1040/
-
+busco_*.log
