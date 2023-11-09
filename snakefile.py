@@ -45,7 +45,9 @@ rule all:
         
         ### Busco I/O files
         expand("/jupyterdem/busco/{group}_{strain}_busco/", zip, group=GROUP, strain=STRAIN),
-        expand("/jupyterdem/busco/summaries/dummy_{ref}.log", zip, ref=REF),
+
+        ### QUAST I/O files
+        expand("/jupyterdem/quast/{group}_{strain}_quast/", zip, group=GROUP, strain=STRAIN),
 
         ### Prokka I/O files
         # Reference genome & genbank
@@ -175,14 +177,16 @@ rule polypolish:
         reads1="/jupyterdem/assembly/{group}_{strain}/reads/{group}_{strain}_1.fastq.gz",
         reads2="/jupyterdem/assembly/{group}_{strain}/reads/{group}_{strain}_2.fastq.gz"
     output:
-        aligned1 = "/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_aligned_1.sam",
-        aligned2 = "/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_aligned_2.sam",
-        filtered1 = "/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_filtered_1.sam",
-        filtered2 = "/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_filtered_2.sam",
+        aligned1="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_aligned_1.sam",
+        aligned2="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_aligned_2.sam",
+        filtered1="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_filtered_1.sam",
+        filtered2="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_filtered_2.sam",
         polished_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta"
     params:
         threads=8, # Number of threads to use for multi-threaded processes
         path="/jupyterdem/assembly/{group}_{strain}/genome/"
+    conda:
+        "env_polypolish"
     shell:
         """
         bwa index {input.genome_fasta}
@@ -193,15 +197,13 @@ rule polypolish:
         """
 
 
-### Need to add QUAST and BUSCO for QC
-# 110323 Add BUSCO
 # Rule to run BUSCO assessments for polished assemblies and plot assessment plots
 rule busco:
     input:
         # Input FASTAs are polished FASTAs from Polypolish
-        strain_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta",
+        strain_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta"
     output:
-        out_dir=directory("/jupyterdem/busco/{group}_{strain}_busco/"),
+        out_dir=directory("/jupyterdem/busco/{group}_{strain}_busco/")
     params:
         lineage_path="/jupyterdem/busco_downloads/lineages/bacteria_odb10",
         output="{group}_{strain}_busco",
@@ -218,6 +220,24 @@ rule busco:
         
         generate_plot.py -wd {params.sum_dir}
         """
+
+
+# Rule to run BUSCO assessments for polished assemblies and plot assessment plots
+rule quast:
+    input:
+        # Input FASTAs are polished FASTAs from Polypolish
+        strain_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}_polished.fasta"
+    output:
+        out_dir=directory("/jupyterdem/quast/{group}_{strain}_quast/")
+    params:
+        threads=4
+    conda:
+        "env_quast"
+    shell:
+        """
+        quast -o {output.out_dir} --threads {params.threads} {input.strain_fasta}
+        """
+
 
 # Rule to run Prokka for annotating REFERENCE FASTAs
 rule prokka_ref:
@@ -312,6 +332,7 @@ rule prokka_strain:
 #         prokka --outdir {params.out_dir} --prefix {params.prefix} --locustag {params.locustag} --cpus {params.threads} --kingdom {params.kingdom} --addgenes --force --proteins {input.strain_ref_genbank} {input.added_strain_fasta}
 #         """
 
+
 # Rule to run Roary for STRAIN-to-REF 1:1 pairwise Pangenome analysis
 rule roary_strain_ref_pairwise:
     input:
@@ -350,8 +371,12 @@ rule roary_strain_ref_pairwise:
         roary -e -p {params.threads} -i {params.pident} -v {input.ref_gff} {input.strain_gff}
         """
 
+
 # Rule to make roary_tmp group folder
 rule move_gff_files:
+    ###
+    input:
+        strain_gff=expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.gff", zip, group=GROUP, strain=STRAIN)
     output:
         tmp_dir=directory("/jupyterdem/roary_tmp/{group}/")
     params:
@@ -386,6 +411,7 @@ rule roary_within_group:
         roary -e -p {params.threads} -i {params.pident} -v *.gff
         mv *.gff {output.out_dir}
         """
+
 
 #################################################################
 
