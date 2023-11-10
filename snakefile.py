@@ -8,6 +8,7 @@ REF, = glob_wildcards("/jupyterdem/assembly/ref/genome/{ref}.fasta")
 
 ADDGROUP, ADDSTRAIN = glob_wildcards("/jupyterdem/added_assembly/{group}_{strain}/genome")
 
+
 # Rule to run Polypolish for all strains within a group
 rule all:
     input:
