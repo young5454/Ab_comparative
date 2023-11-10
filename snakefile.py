@@ -160,7 +160,7 @@ rule all:
         # expand("/jupyterdem/pangenome2/{group}_within_group/summary_statistics.txt", group=GROUP)
 
 
-# Rule to run Polypolish for polishing long-read assemblies with Illumina short reads
+# Rule to run Polypolish for polishing long-read assemblies with Illumina paired-end short reads
 rule polypolish:
     input:
         genome_fasta="/jupyterdem/assembly/{group}_{strain}/genome/{group}_{strain}.fasta",
