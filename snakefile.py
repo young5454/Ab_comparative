@@ -1,17 +1,7 @@
-
 import os
 import glob
 configfile: "groups_original.yml"
 
-# GROUP, STRAIN = config['groups']
-# print(GROUP)
-# print(STRAIN)
-# wildcard_set = set()
-# Define your dictionary of valid group-strain combinations
-# INFO = {
-#     "hvCRAB": ["A0006", "A0197", "A0220"],
-#     "hvCRAB-MDR": ["A0062", "A0277", "A0220"]
-# }
 
 GROUP, STRAIN = glob_wildcards("/jupyterdem/assembly/{group}_{strain}/genome")
 REF, = glob_wildcards("/jupyterdem/assembly/ref/genome/{ref}.fasta")
@@ -43,15 +33,16 @@ rule all:
         # Added assembly
         expand("/jupyterdem/added_assembly/{group}_{strain}/genome/{group}_{strain}.fasta", zip, group=ADDGROUP, strain=ADDSTRAIN),
         
-        ### Busco I/O files
+        ### Busco directory
         expand("/jupyterdem/busco/{group}_{strain}_busco/", zip, group=GROUP, strain=STRAIN),
 
-        ### QUAST I/O files
+        ### QUAST directory
         expand("/jupyterdem/quast/{group}_{strain}_quast/", zip, group=GROUP, strain=STRAIN),
 
         ### Prokka I/O files
         # Reference genome & genbank
         expand("/jupyterdem/assembly/ref/genome/{ref}.fasta", ref=REF),
+
         # Prokka outputs - REFERENCE 
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.err", ref=REF),
         expand("/jupyterdem/annotation/ref/{ref}/{ref}.ffn", ref=REF),
@@ -94,7 +85,7 @@ rule all:
         # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.tbl", zip, group=ADDGROUP, strain=ADDSTRAIN),
         # expand("/jupyterdem/added_annotation/{group}_{strain}/{group}_{strain}.txt", zip, group=ADDGROUP, strain=ADDSTRAIN),
        
-        ## Roary I/O files
+        ### Roary I/O files
         # Roary outputs - STRAIN-to-REF pairwise
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.header.embl", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/accessory.tab", zip, group=GROUP, strain=STRAIN),
@@ -115,10 +106,8 @@ rule all:
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/number_of_unique_genes.Rtab", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/pan_genome_reference.fa", zip, group=GROUP, strain=STRAIN),
         expand("/jupyterdem/pangenome/{group}_{strain}_ref_pairwise/summary_statistics.txt", zip, group=GROUP, strain=STRAIN),
-        
-        # expand("/jupyterdem/dummy/{ref}_dummy.txt", ref=REF),
 
-        # Roary output - Within-Group Roary output
+        # Roary output - Within-Group
         expand("/jupyterdem/pangenome2/{group}", group=GROUP),
 
         # Roary directory - Roary tmp for holding strain GFFs
@@ -302,6 +291,7 @@ rule prokka_strain:
         """
         prokka --outdir {params.out_dir} --prefix {params.prefix} --locustag {params.locustag} --cpus {params.threads} --kingdom {params.kingdom} --addgenes --force --proteins {input.strain_ref_genbank} {input.strain_fasta}
         """
+
 
 # # Rule to run Prokka for annotating polished STRAIN FASTAs - For ADDED STRAINS
 # rule prokka_strain_added:
