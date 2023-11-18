@@ -427,6 +427,7 @@ rule gene_list_maker:
         python gene_list_maker.py --csv {params.tmp_dir}/gene_presence_absence.csv --save_path {output.out_dir}/
         """
 
+
 # Rule to copy faa files from PROKKA output to GROUP directory
 rule move_faa_files:
     input:
@@ -444,6 +445,7 @@ rule move_faa_files:
         python shellmake2.py --group_yml {params.group_info} --save_path {params.group_dir} --script {params.script}
         bash {params.script}
         """
+
 
 # Rule to curate six FASTA files based gene lists created
 rule fasta_curation:
