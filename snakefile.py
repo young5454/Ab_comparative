@@ -411,7 +411,7 @@ rule roary_within_group:
 
 #############################################################################################################################
 # Rule to make six gene lists from ROARY gene_presence_absence.csv
-# core_all, core_hypo, core_nonhypo, shells_all, shells_hypo, shells_nonhypo
+# core_all, core_hypo, core_nonhypo, shells_all, shells_hypo, shells_nonhypo 
 rule gene_list_maker:
     input:
         dummy=rules.roary_within_group.output.out_dir
