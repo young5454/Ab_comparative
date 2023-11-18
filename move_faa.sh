@@ -1,0 +1,14 @@
+mkdir -p /jupyterdem/all_groups/hvCRAB/faas/
+cp /jupyterdem/annotation/hvCRAB_A0006/hvCRAB_A0006.faa /jupyterdem/all_groups/hvCRAB/faas/
+cp /jupyterdem/annotation/hvCRAB_A0197/hvCRAB_A0197.faa /jupyterdem/all_groups/hvCRAB/faas/
+cp /jupyterdem/annotation/hvCRAB_A0220/hvCRAB_A0220.faa /jupyterdem/all_groups/hvCRAB/faas/
+mkdir -p /jupyterdem/all_groups/hvCRAB-MDR/faas/
+cp /jupyterdem/annotation/hvCRAB-MDR_A0062/hvCRAB-MDR_A0062.faa /jupyterdem/all_groups/hvCRAB-MDR/faas/
+cp /jupyterdem/annotation/hvCRAB-MDR_A0277/hvCRAB-MDR_A0277.faa /jupyterdem/all_groups/hvCRAB-MDR/faas/
+cp /jupyterdem/annotation/hvCRAB-MDR_A0292/hvCRAB-MDR_A0292.faa /jupyterdem/all_groups/hvCRAB-MDR/faas/
+mkdir -p /jupyterdem/all_groups/lvCRAB/faas/
+cp /jupyterdem/annotation/lvCRAB_A0274/lvCRAB_A0274.faa /jupyterdem/all_groups/lvCRAB/faas/
+cp /jupyterdem/annotation/lvCRAB_A0291/lvCRAB_A0291.faa /jupyterdem/all_groups/lvCRAB/faas/
+mkdir -p /jupyterdem/all_groups/lv/faas/
+cp /jupyterdem/annotation/lv_A0075/lv_A0075.faa /jupyterdem/all_groups/lv/faas/
+cp /jupyterdem/annotation/lv_A0137/lv_A0137.faa /jupyterdem/all_groups/lv/faas/

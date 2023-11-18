@@ -114,6 +114,11 @@ rule all:
         # Roary directory - Roary tmp for holding strain GFFs
         expand("/jupyterdem/roary_tmp/{group}/", group=GROUP),
 
+        # Group directory
+        expand("/jupyterdem/all_groups/{group}/gene_lists/", group=GROUP),
+        expand("/jupyterdem/all_groups/{group}/faas/", group=GROUP),
+        expand("/jupyterdem/all_groups/{group}/FASTA/", group=GROUP),
+
         # Roary input - Within-GROUP Roary without reference
         # expand("/jupyterdem/roary_tmp/{group}/{group}_{strain}.gff", zip, group=GROUP, strain=STRAIN),
 
@@ -404,8 +409,73 @@ rule roary_within_group:
         """
 
 
-#################################################################
+#############################################################################################################################
+# Rule to make six gene lists from ROARY gene_presence_absence.csv
+# core_all, core_hypo, core_nonhypo, shells_all, shells_hypo, shells_nonhypo
+rule gene_list_maker:
+    input:
+        dummy=rules.roary_within_group.output.out_dir
+    output:
+        out_dir=directory("/jupyterdem/all_groups/{group}/gene_lists/")
+    params:
+        tmp_dir=directory("/jupyterdem/roary_tmp/{group}/")
+    conda:
+        "env_emapper"
+    shell:
+        """
+        mkdir -p {output.out_dir}
+        python gene_list_maker.py --csv {params.tmp_dir}/gene_presence_absence.csv --save_path {output.out_dir}/
+        """
 
+# Rule to copy faa files from PROKKA output to GROUP directory
+rule move_faa_files:
+    input:
+        strain_faa=expand("/jupyterdem/annotation/{group}_{strain}/{group}_{strain}.faa", zip, group=GROUP, strain=STRAIN)
+    output:
+        faa_dir=directory("/jupyterdem/all_groups/{group}/faas/")
+    params:
+        script="move_faa.sh",
+        group_info="groups_original.yml",
+        group_dir="/jupyterdem/all_groups/"
+    conda:
+        "env_emapper"
+    shell:
+        """
+        python shellmake2.py --group_yml {params.group_info} --save_path {params.group_dir} --script {params.script}
+        bash {params.script}
+        """
+
+# Rule to curate six FASTA files based gene lists created
+rule fasta_curation:
+    input:
+        faa_dir=rules.move_faa_files.output.faa_dir,
+        text_path=rules.gene_list_maker.output.out_dir
+    output:
+        fasta_dir=directory("/jupyterdem/all_groups/{group}/FASTA/")
+    params:
+        tmp_dir=directory("/jupyterdem/roary_tmp/{group}/"),
+        statistics=directory("/jupyterdem/all_groups/{group}/statistics.txt")
+    conda:
+        "env_emapper"
+    shell:
+        """
+        mkdir {output.fasta_dir}
+        python core_shell_statistics.py --text_path {input.text_path}/ --save_path {output.fasta_dir}/ --faa_path {input.faa_dir}/ \
+        --gpa {params.tmp_dir}/gene_presence_absence.csv --summary {params.tmp_dir}/summary_statistics.txt > {params.statistics}
+        """
+
+# rule gene_list_maker:
+#     input:
+#         gpa=rules.roary_within_group.output.gpa
+#     output:
+#         out_dir=directory("/jupyterdem/all_groups/{group}/gene_lists/")
+#     conda:
+#         "env_emapper"
+#     shell:
+#         """
+#         mkdir -p {output.out_dir}
+#         python gene_list_maker.py --csv {input.gpa} --save_path {output.out_dir}
+#         """
 
 
 

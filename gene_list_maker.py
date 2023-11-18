@@ -43,10 +43,11 @@ def gene_list_maker(input_csv_file, save_path):
                 else:
                     core_nonhypo.write(entries[0] + '\n')
             else:
-                # Select the rightmost entry if shell
+                # Select the leftmost entry if shell
                 for gene in entries:
                     if gene != '':
                         shell_entry = gene
+                        break
                 shells_all.write(shell_entry + '\n')
 
                 # Check annotation and write to shells files

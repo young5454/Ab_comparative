@@ -1,0 +1,15 @@
+mkdir -p /jupyterdem/all_groups/
+mkdir -p /jupyterdem/all_groups/hvCRAB/
+cp /jupyterdem/roary_tmp/hvCRAB/gene_presence_absence.csv /jupyterdem/all_groups/hvCRAB/
+cp /jupyterdem/roary_tmp/hvCRAB/gene_presence_absence.csv /jupyterdem/all_groups/hvCRAB/
+cp /jupyterdem/roary_tmp/hvCRAB/gene_presence_absence.csv /jupyterdem/all_groups/hvCRAB/
+mkdir -p /jupyterdem/all_groups/hvCRAB-MDR/
+cp /jupyterdem/roary_tmp/hvCRAB-MDR/gene_presence_absence.csv /jupyterdem/all_groups/hvCRAB-MDR/
+cp /jupyterdem/roary_tmp/hvCRAB-MDR/gene_presence_absence.csv /jupyterdem/all_groups/hvCRAB-MDR/
+cp /jupyterdem/roary_tmp/hvCRAB-MDR/gene_presence_absence.csv /jupyterdem/all_groups/hvCRAB-MDR/
+mkdir -p /jupyterdem/all_groups/lvCRAB/
+cp /jupyterdem/roary_tmp/lvCRAB/gene_presence_absence.csv /jupyterdem/all_groups/lvCRAB/
+cp /jupyterdem/roary_tmp/lvCRAB/gene_presence_absence.csv /jupyterdem/all_groups/lvCRAB/
+mkdir -p /jupyterdem/all_groups/lv/
+cp /jupyterdem/roary_tmp/lv/gene_presence_absence.csv /jupyterdem/all_groups/lv/
+cp /jupyterdem/roary_tmp/lv/gene_presence_absence.csv /jupyterdem/all_groups/lv/
