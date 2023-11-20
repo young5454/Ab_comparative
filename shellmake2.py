@@ -5,7 +5,7 @@ parser = argparse.ArgumentParser(description="Shell script generator for moving 
 parser.add_argument('--group_yml', required=True, help="Path to groups-strains information yaml file")
 parser.add_argument('--save_path', required=True, help="Path to save FAA files")
 parser.add_argument('--dir_name', required=False, default="faas/", help="Name of the directory to save FAA files")
-parser.add_argument('--script', required=False, default="move_faa.sh", help="Name of the shell script. Default is move_faa.sh")
+parser.add_argument('--script', required=False, default="move_faas.sh", help="Name of the shell script. Default is move_faa.sh")
 args = parser.parse_args()
 
 # Specify the path to your YAML file
