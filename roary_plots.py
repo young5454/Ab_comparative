@@ -55,6 +55,9 @@ def get_options():
     
     parser.add_argument('--version', action='version',
                          version='%(prog)s '+__version__)
+    
+    ## Save path
+    parser.add_argument('--save_path', required=True, help='Path to save plots')
 
     return parser.parse_args()
 
@@ -105,7 +108,7 @@ if __name__ == "__main__":
 
     sns.despine(left=True,
                 bottom=True)
-    plt.savefig('pangenome_frequency.%s'%options.format, dpi=300)
+    plt.savefig(options.save_path + '/' + 'pangenome_frequency.%s'%options.format, dpi=300)
     plt.clf()
 
     # Sort the matrix according to tip labels in the tree
@@ -162,7 +165,7 @@ if __name__ == "__main__":
                        title=('Tree\n(%d strains)'%roary.shape[1],),
                        do_show=False,
                       )
-        plt.savefig('pangenome_matrix.%s'%options.format, dpi=300)
+        plt.savefig(options.save_path + '/' + 'pangenome_matrix.%s'%options.format, dpi=300)
         plt.clf()
 
     # Plot the pangenome pie chart
@@ -187,5 +190,5 @@ if __name__ == "__main__":
           explode=[0.1, 0.05, 0.02, 0], radius=0.9,
           colors=[(0, 0, 1, float(x)/total) for x in (core, softcore, shell, cloud)],
           autopct=my_autopct)
-    plt.savefig('pangenome_pie.%s'%options.format, dpi=300)
+    plt.savefig(options.save_path + '/' + 'pangenome_pie.%s'%options.format, dpi=300)
     plt.clf()

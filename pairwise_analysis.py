@@ -5,15 +5,15 @@ from fasta_maker import fasta_maker_list
 def main():    
     # Argument parser
     parser = argparse.ArgumentParser(description='Type-to-type protein pairwise comparison analysis')
-    parser.add_argument('--csv_file', required=True, help='Path to pairwise blastp output CSV file')
+    parser.add_argument('--csv_file', required=True, help='Path to pairwise BLASTP output CSV file')
     parser.add_argument('--query_name', required=True, help='Name of the query protein set')
     parser.add_argument('--subject_name', required=True, help='Name of the subject protein set')
-    parser.add_argument('--query_faa_file', required=True, help='Path to representative faa file of query proteins')
-    parser.add_argument('--subject_faa_file', required=True, help='Path to representative faa file of subject proteins')
+    parser.add_argument('--query_faa_file', required=True, help='Path to representative FAA/FASTA file of query proteins')
+    parser.add_argument('--subject_faa_file', required=True, help='Path to representative FAA/FASTA file of subject proteins')
     # parser.add_argument('--analysis_type', required=True, choices=['core-to-core', 'core-to-strain'], \
                         # help='Choose between core-to-core or core-to-strain')
-    parser.add_argument('--evalue', required=False, default=80, help='Threshold for evalue. Default value is 80')
-    parser.add_argument('--pident', required=False, default=0.001, help='Threshold for percent identity. Default value is 0.001')
+    parser.add_argument('--pident', required=False, default=80, help='Threshold for evalue. Default value is 80')
+    parser.add_argument('--evalue', required=False, default=0.001, help='Threshold for percent identity. Default value is 0.001')
     parser.add_argument('--save_query', required=False, default='./', help='Path to save query pass FASTA. Defualt is current directory')
     parser.add_argument('--save_subject', required=False, default='./', help='Path to save subject pass FASTA. Defualt is current directory')
     parser.add_argument('--output_query', required=False, default='pass_query.fasta', help='File name of query pass FASTA. Defualt is pass_query.fasta')
@@ -83,6 +83,9 @@ def main():
     pass_query_set = set(pass_queries)
     pass_subject_set = set(pass_subjects)
 
+    # Print results
+    print('======================================================================')
+
     print('The number of unique query entries that pass the set threshold:', len(pass_query_set))
     print('The number of unique subject entries that pass the set threshold:', len(pass_subject_set))
     
@@ -96,6 +99,8 @@ def main():
     subject_save_file_name = save_subject + output_subject
     subject_count = fasta_maker_list(subject_faa_file, pass_subject_set, subject_save_file_name) 
     print('Successfully created and saved subject pass FASTA file')
+
+    print('======================================================================')
 
     
 if __name__ == "__main__":

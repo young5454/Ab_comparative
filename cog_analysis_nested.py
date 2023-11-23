@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.patches import ConnectionPatch
+from matplotlib.colors import to_rgba
 import argparse
 import csv
 import numpy as np
@@ -147,7 +147,9 @@ def main():
     cogfile_name = save_path + group_name + '_' + types + '_' + 'cog.csv'
     with open(cogfile_name, 'w') as cogfile:
         cogfile.write('group,cog,counts\n')
-        sequence = [cellular_processing_and_signaling, hypo, info_storage_and_processing, metabolism, mobileome, poorly_characterized]
+        sequence = [cellular_processing_and_signaling, hypo, info_storage_and_processing,
+                    metabolism, mobileome, poorly_characterized]
+
         for item in cellular_processing_and_signaling:
             if item in cog_dictionary_weighted.keys():
                 weighted_count = cog_dictionary_weighted[item]
@@ -190,16 +192,17 @@ def main():
             else:
                 cogfile.write('Poorly characterized,' + str(item) + ','  + '0' + '\n')
         
-
     # Plot nested pie chart of COG results
     df = pd.read_csv(cogfile_name)
     vals = df['counts']
     groupsum = df.groupby('group')['counts'].sum()
 
-    facecolor = '#ffffff'
-    font_color = '#000000'
+    facecolor = '#ffffff'   # Default: black
+    font_color = '#000000'  # Default: white
+
+    # Labels that will be written on the plot
     groups_label = ['Cellular processing \n and signaling', 'Hypothetical protein',
-                    'Information storage \n and processing', 'Metabolism',  \
+                    'Information storage \n and processing', 'Metabolism', 
                     'Mobileome',
                     'Poorly characterized']
 
@@ -222,9 +225,10 @@ def main():
         else:
             cogs_label_nonzero.append('')
             cogs_label_nonzero_num.append('')
-
+    
+    # Legends
     groups_legend = ['Cellular processing and signaling', 'Hypothetical protein',
-                    'Information storage and processing', 'Metabolism',  \
+                    'Information storage and processing', 'Metabolism', 
                     'Mobileome',
                     'Poorly characterized']
 
@@ -259,28 +263,30 @@ def main():
     # Size parameters
     size = 0.4
     fig, ax = plt.subplots(figsize=(32, 20), facecolor=facecolor)
-    fig.subplots_adjust(left=0.01, right=0.5)  # You can adjust the value as needed
+    fig.subplots_adjust(left=0.01, right=0.5) 
 
-    from matplotlib.colors import to_rgba
-
+    # My custom colors
     pastel_colors = ['#62d19d', '#83c7ff', '#ffc000', '#ff8383', '#db83c6', '#8c84ff']
     green, sky, yellow, pink, violet, indigo = pastel_colors
 
     # Create a list of colors with varying opacity
     colors_with_opacity = \
-    [to_rgba(green, alpha=0.95), to_rgba(green, alpha=0.85), to_rgba(green, alpha=0.75), to_rgba(green, alpha=0.65),
-     to_rgba(green, alpha=0.55), to_rgba(green, alpha=0.45), to_rgba(green, alpha=0.35), to_rgba(green, alpha=0.25), to_rgba(green, alpha=0.15),
+    [to_rgba(green, alpha=0.95), to_rgba(green, alpha=0.85), to_rgba(green, alpha=0.75), 
+     to_rgba(green, alpha=0.65), to_rgba(green, alpha=0.55), to_rgba(green, alpha=0.45), 
+     to_rgba(green, alpha=0.35), to_rgba(green, alpha=0.25), to_rgba(green, alpha=0.15),
      to_rgba(sky, alpha=0.6),
-     to_rgba(yellow, alpha=0.85), to_rgba(yellow, alpha=0.75), to_rgba(yellow, alpha=0.65), to_rgba(yellow, alpha=0.55), to_rgba(yellow, alpha=0.45),
-     to_rgba(pink, alpha=0.95), to_rgba(pink, alpha=0.85), to_rgba(pink, alpha=0.75), to_rgba(pink, alpha=0.65),
-     to_rgba(pink, alpha=0.55), to_rgba(pink, alpha=0.45), to_rgba(pink, alpha=0.35), to_rgba(pink, alpha=0.25),
+     to_rgba(yellow, alpha=0.85), to_rgba(yellow, alpha=0.75), to_rgba(yellow, alpha=0.65), 
+     to_rgba(yellow, alpha=0.55), to_rgba(yellow, alpha=0.45),
+     to_rgba(pink, alpha=0.95), to_rgba(pink, alpha=0.85), to_rgba(pink, alpha=0.75), 
+     to_rgba(pink, alpha=0.65), to_rgba(pink, alpha=0.55), to_rgba(pink, alpha=0.45), 
+     to_rgba(pink, alpha=0.35), to_rgba(pink, alpha=0.25),
      to_rgba(violet, alpha=0.6),
      to_rgba(indigo, alpha=0.8), to_rgba(indigo, alpha=0.6), to_rgba(indigo, alpha=0.4)]
                         
     inner_colors = pastel_colors
     outer_colors = colors_with_opacity
 
-    # Individual COGs
+    # Plot individual COGs 
     if num_labels:
         ax.pie(vals,
             radius=1.4,
@@ -302,7 +308,7 @@ def main():
             textprops={'color':font_color, 'fontsize': 22, 'fontweight': 'bold'},
             wedgeprops=dict(width=size, edgecolor='w'))
 
-    # Grouped 
+    # Plot grouped COGs
     ax.pie(groupsum, 
         radius=1.4-size,
         startangle=140,

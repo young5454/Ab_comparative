@@ -119,6 +119,18 @@ rule all:
         expand("/jupyterdem/all_groups/{group}/faas/", group=GROUP),
         expand("/jupyterdem/all_groups/{group}/FASTA/", group=GROUP),
 
+        # Roary plots directory#####
+        expand("/jupyterdem/all_groups/{group}/roary_plots/", group=GROUP),
+
+        ### EggNog-Mapper COG analysis output
+        expand("/jupyterdem/all_groups/{group}/emapper-core/", group=GROUP),
+        expand("/jupyterdem/all_groups/{group}/emapper-shells/", group=GROUP),
+        expand("/jupyterdem/all_groups/{group}/cog_plots/", group=GROUP),
+
+
+        # expand("/jupyterdem/all_groups/{group}/emapper-core/plot/", group=GROUP),
+        # expand("/jupyterdem/all_groups/{group}/emapper-shells/plot/", group=GROUP),
+
         # Roary input - Within-GROUP Roary without reference
         # expand("/jupyterdem/roary_tmp/{group}/{group}_{strain}.gff", zip, group=GROUP, strain=STRAIN),
 
@@ -466,16 +478,17 @@ rule fasta_curation:
         --gpa {params.tmp_dir}/gene_presence_absence.csv --summary {params.tmp_dir}/summary_statistics.txt > {params.statistics}
         """
 
+
 ### 11/20/23 Change
 # Rule to conduct COG analysis by running Egg-NOG-mapper for each group's core nonhypo FASTAs
 rule cog_analysis_core:
     input:
         # Inputs are curated FASTAs from rule fasta_curation
-        fasta_dir=rule.fasta_curation.output.fasta_dir
+        fasta_dir=rules.fasta_curation.output.fasta_dir
     output:
         emapper_dir=directory("/jupyterdem/all_groups/{group}/emapper-core/")
     params:
-        # Parameters for Egg-NOG-mapper v5.0
+        # Parameters for Egg-NOG-mapper
         pident=30,
         evalue=0.001,
         score=60,
@@ -488,7 +501,7 @@ rule cog_analysis_core:
     shell:
         """
         mkdir {output.emapper_dir}
-        emapper.py -i {input.fasta_dir}/core_nonhypo.fasta --piedent {params.pident} --evalue {params.evalue} \
+        emapper.py -i {input.fasta_dir}/core_nonhypo.fasta --pident {params.pident} --evalue {params.evalue} \
         --score {params.score} --query_cover {params.query_cover} --subject_cover {params.subject_cover} \
         --output {params.output} --output_dir {output.emapper_dir} --cpu {params.cpu}
         """
@@ -498,11 +511,11 @@ rule cog_analysis_core:
 rule cog_analysis_shells:
     input:
         # Inputs are curated FASTAs from rule fasta_curation
-        fasta_dir=rule.fasta_curation.output.fasta_dir
+        fasta_dir=rules.fasta_curation.output.fasta_dir
     output:
         emapper_dir=directory("/jupyterdem/all_groups/{group}/emapper-shells/")
     params:
-        # Parameters for Egg-NOG-mapper v5.0
+        # Parameters for Egg-NOG-mapper
         pident=30,
         evalue=0.001,
         score=60,
@@ -515,10 +528,106 @@ rule cog_analysis_shells:
     shell:
         """
         mkdir {output.emapper_dir}
-        emapper.py -i {input.fasta_dir}/shells_nonhypo.fasta --piedent {params.pident} --evalue {params.evalue} \
+        emapper.py -i {input.fasta_dir}/shells_nonhypo.fasta --pident {params.pident} --evalue {params.evalue} \
         --score {params.score} --query_cover {params.query_cover} --subject_cover {params.subject_cover} \
         --output {params.output} --output_dir {output.emapper_dir} --cpu {params.cpu}
         """
+
+
+# Rule to draw nested pie chart for each group's core/shell COG analysis results
+rule cog_visualization:
+    input:
+        # Inputs are annotated tsv files generated from Egg-NOG-mapper
+        core_emapper_dir=rules.cog_analysis_core.output.emapper_dir,
+        shells_emapper_dir=rules.cog_analysis_shells.output.emapper_dir
+    output:
+        plot_dir=directory("/jupyterdem/all_groups/{group}/cog_plots/")
+    params:
+        core_hypo_path="/jupyterdem/all_groups/{group}/FASTA/core_hypo.fasta",
+        shells_hypo_path="/jupyterdem/all_groups/{group}/FASTA/shells_hypo.fasta",
+
+        group_name="{group}",
+        types_core="Core",
+        types_shells="Shells",
+        # save_path="/jupyterdem/all_groups/{group}/emapper-core/",
+        core_statistics="/jupyterdem/all_groups/{group}/emapper-core/statistics.txt",
+        shells_statistics="/jupyterdem/all_groups/{group}/emapper-shells/statistics.txt"
+    conda:
+        "env_emapper"
+    shell:
+        """
+        mkdir {output.plot_dir}
+
+        python cog_analysis_nested.py --tsv_file {input.core_emapper_dir}/*.annotations \
+        --hypo_path {params.core_hypo_path} --group_name {params.group_name} \
+        --types {params.types_core} --save_path {output.plot_dir}/ > {params.core_statistics}
+
+        python cog_analysis_nested.py --tsv_file {input.shells_emapper_dir}/*.annotations \
+        --hypo_path {params.shells_hypo_path} --group_name {params.group_name} \
+        --types {params.types_shells} --save_path {output.plot_dir}/ > {params.shells_statistics}
+        """
+
+
+# Rule to draw ROARY plots - slightly modified version of roary_plots.py by Marco Galardini
+# https://github.com/sanger-pathogens/Roary/blob/master/contrib/roary_plots/README.md
+rule roary_visualization:
+    input:
+        dummy=rules.roary_within_group.output.out_dir
+    output:
+        plot_dir=directory("/jupyterdem/all_groups/{group}/roary_plots/")
+    params:
+        tmp_dir=directory("/jupyterdem/roary_tmp/{group}/"),
+        group="{group}"
+    conda:
+        "env_emapper"
+    shell:
+        """
+        mkdir {output.plot_dir}
+        FastTree -nt -gtr {params.tmp_dir}/core_gene_alignment.aln > {params.group}_tree.newick
+
+        python roary_plots.py --labels {params.group}_tree.newick {params.tmp_dir}gene_presence_absence.csv \
+        --save_path {output.plot_dir}
+
+        mv {params.group}_tree.newick {output.plot_dir}
+        """
+
+
+
+
+
+
+
+# # Rule to draw nested pie chart for each group's shells COG analysis results
+# rule cog_visualization_shells:
+#     input:
+#         # Inputs are annotated tsv files generated from Egg-NOG-mapper
+#         emapper_dir=rules.cog_analysis_shells.output.emapper_dir
+#     params:
+#         hypo_path="/jupyterdem/all_groups/{group}/FASTA/shells_hypo.fasta",
+#         group_name="{group}",
+#         types="Shells",
+#         # save_path="/jupyterdem/all_groups/{group}/emapper-shells/",
+#         statistics="/jupyterdem/all_groups/{group}/emapper-shells/statistics.txt"
+#     conda:
+#         "env_emapper"
+#     shell:
+#         """
+#         python cog_analysis_nested.py --tsv_file {input.emapper_dir}/*.annotations \
+#         --hypo_path {params.hypo_path} --group_name {params.group_name} \
+#         --types {params.types} --save_path {output.plot_dir} > {params.statistics}
+#         """
+
+
+
+        
+
+
+
+
+
+
+
+
 
 # rule gene_list_maker:
 #     input:
