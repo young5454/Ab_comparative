@@ -144,7 +144,7 @@ def main():
     print('+--------------------------------------------+')
 
     # Create COG CSV file
-    cogfile_name = group_name + '_' + types + '_' + 'cog.csv'
+    cogfile_name = save_path + group_name + '_' + types + '_' + 'cog.csv'
     with open(cogfile_name, 'w') as cogfile:
         cogfile.write('group,cog,counts\n')
         sequence = [cellular_processing_and_signaling, hypo, info_storage_and_processing, metabolism, mobileome, poorly_characterized]
@@ -280,6 +280,7 @@ def main():
     inner_colors = pastel_colors
     outer_colors = colors_with_opacity
 
+    # Individual COGs
     if num_labels:
         ax.pie(vals,
             radius=1.4,
@@ -287,10 +288,9 @@ def main():
             colors=outer_colors,
             labels=cogs_label_nonzero_num,
             labeldistance=0.75,
-            rotatelabels=True,
+            rotatelabels=False,
             textprops={'color':font_color, 'fontsize': 20, 'fontweight': 'bold'},
             wedgeprops=dict(width=size, edgecolor='w'))
-
     else:
         ax.pie(vals,
             radius=1.4,
@@ -298,18 +298,16 @@ def main():
             colors=outer_colors,
             labels=cogs_label_nonzero,
             labeldistance=0.85,
-            rotatelabels=True,
+            rotatelabels=False,
             textprops={'color':font_color, 'fontsize': 22, 'fontweight': 'bold'},
             wedgeprops=dict(width=size, edgecolor='w'))
 
-
-        ax.add_artist(con)
-
+    # Grouped 
     ax.pie(groupsum, 
         radius=1.4-size,
         startangle=140,
         colors=inner_colors,
-        # labels=groups_label,
+        labels=groups_label,
         labeldistance=0.2,
         rotatelabels=True,
         textprops={'color':font_color, 'fontsize': 25},
@@ -323,11 +321,11 @@ def main():
     figure_name = save_title + '.png'
 
     # Set a title
-    # ax.set_title(plot_title, fontsize=60, pad=30, color=font_color)
+    ax.set_title(plot_title, fontsize=60, pad=30, color=font_color)
 
     # Add a legend
     fig.legend(bbox_to_anchor=(0.75, 0.5), loc='center', labels=cogs_legend, fontsize=30)
-    plt.savefig(save_title + '.png', facecolor=facecolor)
+    plt.savefig(save_path + save_title + '.png', facecolor=facecolor)
 
 
 if __name__ == "__main__":

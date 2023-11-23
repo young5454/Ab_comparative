@@ -466,6 +466,60 @@ rule fasta_curation:
         --gpa {params.tmp_dir}/gene_presence_absence.csv --summary {params.tmp_dir}/summary_statistics.txt > {params.statistics}
         """
 
+### 11/20/23 Change
+# Rule to conduct COG analysis by running Egg-NOG-mapper for each group's core nonhypo FASTAs
+rule cog_analysis_core:
+    input:
+        # Inputs are curated FASTAs from rule fasta_curation
+        fasta_dir=rule.fasta_curation.output.fasta_dir
+    output:
+        emapper_dir=directory("/jupyterdem/all_groups/{group}/emapper-core/")
+    params:
+        # Parameters for Egg-NOG-mapper v5.0
+        pident=30,
+        evalue=0.001,
+        score=60,
+        query_cover=70,
+        subject_cover=70,
+        output="{group}-core",
+        cpu=8
+    conda:
+        "env_emapper"
+    shell:
+        """
+        mkdir {output.emapper_dir}
+        emapper.py -i {input.fasta_dir}/core_nonhypo.fasta --piedent {params.pident} --evalue {params.evalue} \
+        --score {params.score} --query_cover {params.query_cover} --subject_cover {params.subject_cover} \
+        --output {params.output} --output_dir {output.emapper_dir} --cpu {params.cpu}
+        """
+
+
+# Rule to conduct COG analysis by running Egg-NOG-mapper for each group's shell nonhypo FASTAs
+rule cog_analysis_shells:
+    input:
+        # Inputs are curated FASTAs from rule fasta_curation
+        fasta_dir=rule.fasta_curation.output.fasta_dir
+    output:
+        emapper_dir=directory("/jupyterdem/all_groups/{group}/emapper-shells/")
+    params:
+        # Parameters for Egg-NOG-mapper v5.0
+        pident=30,
+        evalue=0.001,
+        score=60,
+        query_cover=70,
+        subject_cover=70,
+        output="{group}-shells",
+        cpu=8
+    conda:
+        "env_emapper"
+    shell:
+        """
+        mkdir {output.emapper_dir}
+        emapper.py -i {input.fasta_dir}/shells_nonhypo.fasta --piedent {params.pident} --evalue {params.evalue} \
+        --score {params.score} --query_cover {params.query_cover} --subject_cover {params.subject_cover} \
+        --output {params.output} --output_dir {output.emapper_dir} --cpu {params.cpu}
+        """
+
 # rule gene_list_maker:
 #     input:
 #         gpa=rules.roary_within_group.output.gpa
